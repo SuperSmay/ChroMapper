@@ -19,7 +19,7 @@ public class PlatformDescriptor : MonoBehaviour {
     public GridRotationController RotationController;
     [HideInInspector] public PlatformColors colors;
     public PlatformColors defaultColors = new PlatformColors();
-    [Tooltip("-1 = No Sorting | 0 = Default Sorting | 1 = Collider Platform Special")]
+    [Tooltip("-1 = No Sorting | 0 = Default Sorting | 1 = Collider Platform Special | 2 = New lanes 6/7 + 16/17")]
     public int SortMode;
     [Tooltip("Objects to disable through the L keybind, like lights and static objects in 360 environments.")]
     public GameObject[] DisablableObjects;
@@ -34,11 +34,29 @@ public class PlatformDescriptor : MonoBehaviour {
     private BeatmapObjectCallbackController callbackController;
     private RotationCallbackController rotationCallback;
     private AudioTimeSyncController atsc;
+
+    private Dictionary<int, List<PlatformEventHandler>> platformEventHandlers = new Dictionary<int, List<PlatformEventHandler>>();
     private Dictionary<LightsManager, Color> ChromaCustomColors = new Dictionary<LightsManager, Color>();
     private Dictionary<LightsManager, Gradient> ChromaGradients = new Dictionary<LightsManager, Gradient>();
 
-    void Start()
+    private void Start()
     {
+        var eventHandlers = GetComponentsInChildren<PlatformEventHandler>();
+
+        foreach (var handler in eventHandlers)
+        {
+            foreach (var type in handler.ListeningEventTypes)
+            {
+                if (!platformEventHandlers.TryGetValue(type, out var list))
+                {
+                    list = new List<PlatformEventHandler>();
+                    platformEventHandlers.Add(type, list);
+                }
+
+                list.Add(handler);
+            }
+        }
+
         if (SceneManager.GetActiveScene().name != "999_PrefabBuilding")
         {
             LoadInitialMap.LevelLoadedEvent += LevelLoaded;
@@ -50,14 +68,12 @@ public class PlatformDescriptor : MonoBehaviour {
     {
         foreach (Renderer renderer in GetComponentsInChildren<Renderer>())
         {
-            if (renderer.material.name.Contains("Shiny Ass Black"))
+            if (renderer.sharedMaterial.name.Contains("Shiny Ass Black"))
             {
-                Material mat = new Material(renderer.material);
                 Vector3 scale = renderer.gameObject.transform.lossyScale;
                 Vector2 normalScale = new Vector2(scale.x, scale.z) / NormalMapScale;
-                mat.SetTextureScale(Shader.PropertyToID("_BaseMap"), normalScale);
-                mat.SetTextureOffset(Shader.PropertyToID("_BaseMap"), Vector2.zero);
-                renderer.material = mat;
+                renderer.material.SetTextureScale(Shader.PropertyToID("_BaseMap"), normalScale);
+                renderer.material.SetTextureOffset(Shader.PropertyToID("_BaseMap"), Vector2.zero);
             }
         }
     }
@@ -132,10 +148,10 @@ public class PlatformDescriptor : MonoBehaviour {
     public void EventPassed(bool initial, int index, BeatmapObject obj)
     {
         MapEvent e = obj as MapEvent;
-        
+
         // Two events at the same time should yield same results
         UnityEngine.Random.InitState(Mathf.RoundToInt(obj._time * 100));
-        
+
         // FUN PART BOIS
         switch (e._type)
         {
@@ -147,7 +163,7 @@ public class PlatformDescriptor : MonoBehaviour {
                     {
                         BigRingManager?.HandleRotationEvent(obj._customData);
                     }
-                    else if (filter.Contains("Small"))
+                    else if (filter.Contains("Small")|| filter.Contains("Panels") || filter.Contains("Triangle"))
                     {
                         SmallRingManager?.HandleRotationEvent(obj._customData);
                     }
@@ -170,20 +186,34 @@ public class PlatformDescriptor : MonoBehaviour {
             case 12:
                 foreach (RotatingLightsBase l in LightingManagers[MapEvent.EVENT_TYPE_LEFT_LASERS].RotatingLights)
                 {
-                    l.UpdateOffset(e._value, UnityEngine.Random.Range(0, 180), UnityEngine.Random.Range(0, 1) == 1, obj._customData);
+                    l.UpdateOffset(true, e._value, UnityEngine.Random.Range(0, 180), UnityEngine.Random.Range(0, 1) == 1, obj._customData);
+                }
+
+                if (LightingManagers.Length < MapEvent.EVENT_TYPE_CUSTOM_LIGHT_2) break;
+
+                foreach (RotatingLightsBase l in LightingManagers[MapEvent.EVENT_TYPE_CUSTOM_LIGHT_2].RotatingLights)
+                {
+                    l.UpdateOffset(true, e._value, UnityEngine.Random.Range(0, 180), UnityEngine.Random.Range(0, 1) == 1, obj._customData);
                 }
                 break;
             case 13:
                 foreach (RotatingLightsBase r in LightingManagers[MapEvent.EVENT_TYPE_RIGHT_LASERS].RotatingLights)
                 {
-                    r.UpdateOffset(e._value, UnityEngine.Random.Range(0, 180), UnityEngine.Random.Range(0, 1) == 1, obj._customData);
+                    r.UpdateOffset(false, e._value, UnityEngine.Random.Range(0, 180), UnityEngine.Random.Range(0, 1) == 1, obj._customData);
+                }
+
+                if (LightingManagers.Length < MapEvent.EVENT_TYPE_CUSTOM_LIGHT_3) break;
+
+                foreach (RotatingLightsBase r in LightingManagers[MapEvent.EVENT_TYPE_CUSTOM_LIGHT_3].RotatingLights)
+                {
+                    r.UpdateOffset(false, e._value, UnityEngine.Random.Range(0, 180), UnityEngine.Random.Range(0, 1) == 1, obj._customData);
                 }
                 break;
             case 5:
                 ColorBoost = e._value == 1;
                 foreach (var manager in LightingManagers)
                 {
-                    manager.Boost(ColorBoost ? colors.RedBoostColor : colors.RedColor,
+                    manager?.Boost(ColorBoost ? colors.RedBoostColor : colors.RedColor,
                         ColorBoost ? colors.BlueBoostColor : colors.BlueColor);
                 }
                 break;
@@ -191,6 +221,14 @@ public class PlatformDescriptor : MonoBehaviour {
                 if (e._type < LightingManagers.Length && LightingManagers[e._type] != null)
                     HandleLights(LightingManagers[e._type], e._value, e);
                 break;
+        }
+
+        if (atsc != null && atsc.IsPlaying && platformEventHandlers.TryGetValue(e._type, out var eventHandlers))
+        {
+            foreach (var handler in eventHandlers)
+            {
+                handler.OnEventTrigger(e._type, e);
+            }
         }
     }
 

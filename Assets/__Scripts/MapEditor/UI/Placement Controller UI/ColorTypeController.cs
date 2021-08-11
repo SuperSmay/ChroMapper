@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class ColorTypeController : MonoBehaviour
 {
     [SerializeField] private NotePlacement notePlacement;
+    [SerializeField] private LightingModeController lightMode;
     [SerializeField] private CustomColorsUIController customColors;
     [SerializeField] private Image leftSelected;
     [SerializeField] private Image rightSelected;
@@ -52,6 +53,7 @@ public class ColorTypeController : MonoBehaviour
     public void UpdateValue(int type)
     {
         notePlacement.UpdateType(type);
+        lightMode.UpdateValue();
         UpdateUI();
     }
 
@@ -61,6 +63,11 @@ public class ColorTypeController : MonoBehaviour
         rightSelected.enabled = notePlacement.queuedData._type == BeatmapNote.NOTE_TYPE_B;
     }
 
+    public bool LeftSelectedEnabled()
+    {
+        return leftSelected.enabled;
+    }
+    
     private void OnDestroy()
     {
         customColors.CustomColorsUpdatedEvent -= UpdateColors;

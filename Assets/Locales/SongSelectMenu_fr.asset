@@ -38,15 +38,13 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 5
-    m_Localized: 'Niveaux
-
-      perso'
+    m_Localized: "Maps\ntermin\xE9es"
     m_Metadata:
       m_Items: []
   - m_Id: 6
-    m_Localized: 'Niveaux
+    m_Localized: 'Maps
 
-      perso WIP'
+      WIP'
     m_Metadata:
       m_Items: []
   - m_Id: 7
@@ -126,6 +124,18 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 26
     m_Localized: Suppression de l'environnement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27
+    m_Localized: Sort by Song Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28
+    m_Localized: Sort by Song Artist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 29
+    m_Localized: Sort by Date Modified
     m_Metadata:
       m_Items: []
   references:

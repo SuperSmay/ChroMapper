@@ -3,7 +3,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Localization;
 
-public class Tooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler {
+public class Tooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+{
 
     [SerializeField]
     public LocalizedString tooltip;
@@ -14,37 +15,40 @@ public class Tooltip : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler 
     [SerializeField]
     public string advancedTooltip;
 
-    public void OnPointerEnter(PointerEventData eventData) {
-        if (routine == null) {
+    public bool TooltipActive = false;
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (routine == null)
+        {
             routine = StartCoroutine(TooltipRoutine(0));
         }
+
+        TooltipActive = true;
     }
 
-    public void OnPointerExit(PointerEventData eventData) {
-        if (routine != null) {
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (routine != null)
+        {
             StopCoroutine(routine);
             routine = null;
         }
+
         PersistentUI.Instance?.HideTooltip();
+        TooltipActive = false;
     }
 
-    void OnDisable() {
-        if (routine != null) {
-            StopCoroutine(routine);
-            routine = null;
-        }
-        PersistentUI.Instance?.HideTooltip();
-    }
+    void OnDisable() => OnPointerExit(null);
 
-    Coroutine routine;
-    IEnumerator TooltipRoutine(float timeToWait)
+    private Coroutine routine;
+    
+    private IEnumerator TooltipRoutine(float timeToWait)
     {
         string tooltipTextResult = tooltipOverride;
         if (string.IsNullOrEmpty(tooltipOverride))
         {
-            var tooltipText = tooltip.GetLocalizedString();
-            yield return tooltipText;
-            tooltipTextResult = tooltipText.Result;
+            tooltipTextResult = tooltip.GetLocalizedString();
         }
 
         PersistentUI.Instance.SetTooltip(tooltipTextResult, advancedTooltip);

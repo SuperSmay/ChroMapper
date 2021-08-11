@@ -32,7 +32,7 @@ public class SongInfoEditUI : MenuBase
         }
     }
 
-    private static Dictionary<string, AudioType> ExtensionToAudio = new Dictionary<string, AudioType>()
+    public static readonly Dictionary<string, AudioType> ExtensionToAudio = new Dictionary<string, AudioType>()
     {
         {"ogg", AudioType.OGGVORBIS},
         {"egg", AudioType.OGGVORBIS},
@@ -58,7 +58,8 @@ public class SongInfoEditUI : MenuBase
         new Environment("FitBeat", "FitBeatEnvironment"),
         new Environment("Linkin Park", "LinkinParkEnvironment"),
         new Environment("BTS", "BTSEnvironment"),
-        new Environment("Kaleidoscope", "KaleidoscopeEnvironment")
+        new Environment("Kaleidoscope", "KaleidoscopeEnvironment"),
+        new Environment("Interscope", "InterscopeEnvironment")
     };
 
     private static List<string> VanillaDirectionalEnvironments = new List<string>()
@@ -163,7 +164,7 @@ public class SongInfoEditUI : MenuBase
         Song.previewDuration = GetTextValue(prevDurField);
         Song.songTimeOffset = GetTextValue(offset);
 
-        if (Song.songTimeOffset > 0)
+        if (Song.songTimeOffset != 0)
         {
             PersistentUI.Instance.ShowDialogBox("SongEditMenu", "songtimeoffset.warning", null,
                 PersistentUI.DialogBoxPresetType.Ok);
@@ -189,6 +190,13 @@ public class SongInfoEditUI : MenuBase
         Song.contributors = contributorController.contributors;
 
         Song.SaveSong();
+
+        // Update duration cache (This needs to be beneath SaveSong so that the directory is garaunteed to be created)
+        // also dont forget to null check please thanks
+        if (previewAudio.clip != null)
+        {
+            SongListItem.SetDuration(this, Path.GetFullPath(Song.directory), previewAudio.clip.length);
+        }
 
         // Trigger validation checks, if this is the first save they will not have been done yet
         coverImageField.GetComponent<InputBoxFileValidator>().OnUpdate();
@@ -399,6 +407,7 @@ public class SongInfoEditUI : MenuBase
 
             AddToZip(archive, Song.coverImageFilename);
             AddToZip(archive, Song.songFilename);
+            AddToZip(archive, "cinema-video.json");
 
             foreach (var contributor in Song.contributors.DistinctBy(it => it.LocalImageLocation))
             {
@@ -520,7 +529,7 @@ public class SongInfoEditUI : MenuBase
     {
         if (r == 0)
         {
-            BeatSaberMap map = Song.GetMapFromDifficultyBeatmap(BeatSaberSongContainer.Instance.difficultyData);
+            var map = difficultySelect.CurrentDiff;
             PersistentUI.UpdateBackground(Song);
 
             Debug.Log("Transitioning...");

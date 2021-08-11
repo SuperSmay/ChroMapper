@@ -13,9 +13,9 @@ public class Settings {
     public static Settings Instance => _instance ?? (_instance = Load());
 
     public string BeatSaberInstallation = "";
-    public string CustomSongsFolder => ConvertToDirectory(BeatSaberInstallation + "/Beat Saber_Data/CustomLevels");
-    public string CustomWIPSongsFolder => ConvertToDirectory(BeatSaberInstallation + "/Beat Saber_Data/CustomWIPLevels");
-    public string CustomPlatformsFolder => ConvertToDirectory(BeatSaberInstallation + "/CustomPlatforms");
+    public string CustomSongsFolder => Path.Combine(BeatSaberInstallation, "Beat Saber_Data", "CustomLevels");
+    public string CustomWIPSongsFolder => Path.Combine(BeatSaberInstallation, "Beat Saber_Data", "CustomWIPLevels");
+    public string CustomPlatformsFolder => Path.Combine(BeatSaberInstallation, "CustomPlatforms");
 
     public bool DiscordRPCEnabled = true;
     public float EditorScale = 4;
@@ -23,7 +23,7 @@ public class Settings {
     public int AutoSaveInterval = 5;
     public bool InvertNoteControls = false; // Hidden setting, does nothing
     public int Waveform = 1;
-    public bool CountersPlus = false;
+    public CountersPlusSettings CountersPlus = new CountersPlusSettings();
     public bool PickColorFromChromaEvents = false;
     public bool PlaceChromaColor = false;
     public bool PlaceOnlyChromaEvents = false; // Hidden setting, does nothing
@@ -87,6 +87,8 @@ public class Settings {
     public string ReleaseServer = "https://cm.topc.at";
     public int DSPBufferSize = 10;
     public bool QuickNoteEditing = false;
+    public bool ObstacleOutlines = true;
+    public int AudioLatencyCompensation = 0;
 
     public int NodeEditorTextSize = 10;
     public int NodeEditorSize = 10;
@@ -97,6 +99,8 @@ public class Settings {
     public string LastLoadedMap = "";
     public string LastLoadedChar = "";
     public string LastLoadedDiff = "";
+
+    public int LastSongSortType = (int)SongList.SongSortType.Name;
 
     public static Dictionary<string, FieldInfo> AllFieldInfos = new Dictionary<string, FieldInfo>();
     public static Dictionary<string, object> NonPersistentSettings = new Dictionary<string, object>();
@@ -161,7 +165,7 @@ public class Settings {
                         else if (typeof(IJSONSetting).IsAssignableFrom(field.FieldType))
                         {
                             var elementJSON = (IJSONSetting) Activator.CreateInstance(field.FieldType);
-                            elementJSON.FromJSON(mainNode[field.Name].Value);
+                            elementJSON.FromJSON(mainNode[field.Name]);
                             field.SetValue(settings, elementJSON);
                         }
                         else
@@ -318,6 +322,4 @@ public class Settings {
         }
         return true;
     }
-
-    public static string ConvertToDirectory(string s) => s.Replace('\\', '/');
 }

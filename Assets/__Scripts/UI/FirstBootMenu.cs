@@ -79,7 +79,7 @@ public class FirstBootMenu : MonoBehaviour {
         {
             return;
         }
-        Settings.Instance.BeatSaberInstallation = Settings.ConvertToDirectory(installation);
+        Settings.Instance.BeatSaberInstallation = Path.GetFullPath(installation);
     }
 
     public void SetDirectoryButtonPressed()
@@ -98,38 +98,46 @@ public class FirstBootMenu : MonoBehaviour {
     {
         switch (graphicsDropdown.value)
         {
+            // Performance
             case 2:
                 Settings.Instance.Waveform = 0;
-
+                Settings.Instance.ObstacleOutlines = false;
                 Settings.Instance.PostProcessingIntensity = 0;
                 Settings.Instance.ChromaticAberration = false;
                 Settings.Instance.SimpleBlocks = true;
                 Settings.Instance.Reflections = false;
                 Settings.Instance.HighQualityBloom = false;
                 break;
+            // Balanced
             case 1:
-                Settings.Instance.HighQualityBloom = false;
+                Settings.Instance.ChromaticAberration = false;
+                Settings.Instance.SimpleBlocks = true;
                 Settings.Instance.Reflections = false;
+                break;
+            // Quality
+            case 0:
+                Settings.Instance.Offset_Spawning = 8;
+                Settings.Instance.Offset_Despawning = 2;
+                Settings.Instance.ChunkDistance = 10;
                 break;
         }
     }
 
     public void ErrorFeedback(string s)
     {
-        StartCoroutine(DoErrorFeedback(s, false));
+        DoErrorFeedback(s, false);
     }
 
     public void ErrorFeedbackWithContinue(string s)
     {
-        StartCoroutine(DoErrorFeedback(s, true));
+        DoErrorFeedback(s, true);
     }
 
-    private IEnumerator DoErrorFeedback(string s, bool continueAfter)
+    private void DoErrorFeedback(string s, bool continueAfter)
     {
-        var arg = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("FirstBoot", s);
-        yield return arg;
+        var arg = LocalizationSettings.StringDatabase.GetLocalizedString("FirstBoot", s);
         PersistentUI.Instance.ShowDialogBox("FirstBoot", "validate.dialog",
-            continueAfter ? (Action<int>)HandleGenerateMissingFoldersWithContinue : HandleGenerateMissingFolders, PersistentUI.DialogBoxPresetType.YesNo, new object[] { arg.Result });
+            continueAfter ? (Action<int>)HandleGenerateMissingFoldersWithContinue : HandleGenerateMissingFolders, PersistentUI.DialogBoxPresetType.YesNo, new object[] { arg });
     }
 
     internal void HandleGenerateMissingFolders(int res)
@@ -347,10 +355,9 @@ public class FirstBootMenu : MonoBehaviour {
         StandaloneFileBrowser.OpenFolderPanelAsync("Installation Directory", "", false, paths =>
         {
             if (paths.Length <= 0) return;
-            
+
             var installation = paths[0];
-            directoryField.text = installation;
-            Settings.Instance.BeatSaberInstallation = Settings.ConvertToDirectory(installation);
+            Settings.Instance.BeatSaberInstallation = directoryField.text = installation;
             validation.SetValidationState(true, Settings.ValidateDirectory(ErrorFeedback));
         });
     }

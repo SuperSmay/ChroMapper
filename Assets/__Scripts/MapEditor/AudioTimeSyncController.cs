@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -59,9 +60,27 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
         }
     }
 
+    public float CurrentSongSeconds
+    {
+        get {
+            if (songAudioSource.clip is null)
+            {
+                return 0f;
+            }
+            return songAudioSource.timeSamples / (float)songAudioSource.clip.frequency;
+        }
+    }
+
+    public float CurrentSongBeats
+    {
+        get => GetBeatFromSeconds(CurrentSongSeconds);
+    }
+
     public bool IsPlaying { get; private set; }
     private float playStartTime;
     private const float cancelPlayInputDuration = 0.3f;
+    private float audioLatencyCompensationSeconds = 0f;
+    public bool stopScheduled = false;
 
     private float offsetMS;
     public float offsetBeat { get; private set; } = -1;
@@ -121,6 +140,7 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
 
     private void OnDestroy()
     {
+        clip = null;
         LoadInitialMap.LevelLoadedEvent -= OnLevelLoaded;
         Settings.ClearSettingNotifications("SongSpeed");
         Settings.ClearSettingNotifications("SongVolume");
@@ -132,26 +152,32 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
             if (!levelLoaded) return;
             if (IsPlaying)
             {
-                var time = currentSeconds;
+                var time = currentSeconds + audioLatencyCompensationSeconds;
 
                 // Slightly more accurate than songAudioSource.time
-                var trackTime = songAudioSource.timeSamples / (float) songAudioSource.clip.frequency;
+                var trackTime = CurrentSongSeconds;
 
                 // Sync correction
-                var correction = CurrentSeconds > 1 ? trackTime / CurrentSeconds : 1f;
+                var correction = CurrentSeconds > 1 ? trackTime / time : 1f;
 
-                // Snap forward if we are more than a 2 frames out of sync as we're trying to make it one frame out?
-                float frameTime = Mathf.Max(0.04f, Time.smoothDeltaTime * 2);
-                if (Mathf.Abs(trackTime - CurrentSeconds) >= frameTime * (songSpeed / 10f))
+                if (songAudioSource.isPlaying)
                 {
-                    time = trackTime;
+                    // Snap forward if we are more than a 2 frames out of sync as we're trying to make it one frame out?
+                    float frameTime = Mathf.Max(0.04f, Time.smoothDeltaTime * 2);
+                    if (Mathf.Abs(trackTime - CurrentSeconds) >= frameTime * (songSpeed / 10f))
+                    {
+                        time = trackTime;
+                        correction = 1;
+                    }
+                }
+                else
+                {
                     correction = 1;
+                    if (!stopScheduled) StartCoroutine("StopPlayingDelayed", audioLatencyCompensationSeconds);
                 }
 
                 // Add frame time to current time
-                CurrentSeconds = time + (correction * (Time.deltaTime * (songSpeed / 10f)));
-
-                if (!songAudioSource.isPlaying) TogglePlaying();
+                CurrentSeconds = time + (correction * (Time.deltaTime * (songSpeed / 10f))) - audioLatencyCompensationSeconds;
             }
 
         } catch (Exception e) {
@@ -174,19 +200,38 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
         CurrentSeconds = offsetMS;
     }
 
+    public IEnumerator StopPlayingDelayed(float delaySeconds)
+    {
+        stopScheduled = true;
+        yield return new WaitForSeconds(delaySeconds);
+        stopScheduled = false;
+        if (IsPlaying) TogglePlaying();
+    }
+
     public void TogglePlaying() {
+        if (stopScheduled)
+        {
+            StopCoroutine("StopPlayingDelayed");
+            stopScheduled = false;
+        }
+
         IsPlaying = !IsPlaying;
         if (IsPlaying)
         {
             if (CurrentSeconds >= songAudioSource.clip.length - 0.1f)
             {
                 Debug.LogError(":hyperPepega: :mega: STOP TRYING TO PLAY THE SONG AT THE VERY END");
+                IsPlaying = false;
+                return;
             }
             else
             {
                 playStartTime = CurrentSeconds;
                 songAudioSource.time = CurrentSeconds;
                 songAudioSource.Play();
+
+                audioLatencyCompensationSeconds = (Settings.Instance.AudioLatencyCompensation / 1000f);
+                CurrentSeconds -= audioLatencyCompensationSeconds;
             }
         }
         else
@@ -247,6 +292,9 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
     public float GetSecondsFromBeat(float beat) => 60 / song.beatsPerMinute * beat;
 
     private void ValidatePosition() {
+        // Don't validate during playback
+        if (IsPlaying) return;
+
         if (currentSeconds < offsetMS) currentSeconds = offsetMS;
         if (currentBeat < offsetBeat) currentBeat = offsetBeat;
         if (currentSeconds > BeatSaberSongContainer.Instance.loadedSong.length)
@@ -298,35 +346,7 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
                 // +1 beat if we're going forward, -1 beat if we're going backwards
                 float beatShiftRaw = 1f / gridMeasureSnapping * (value > 0 ? 1f : -1f);
 
-                // Grab any BPM Change at this location, calculate a BPM-modified shift in beat
-                BeatmapBPMChange currentBpmChange = bpmChangesContainer.FindLastBPM(CurrentBeat, true);
-                float beatShift = beatShiftRaw;
-                // This new beatShift value will move us 1 BPM-modified beat forward or backward
-                if (currentBpmChange != null) beatShift *= (song.beatsPerMinute / currentBpmChange._BPM);
-
-                // Now we check if the BPM Change after the shift is different.
-                BeatmapBPMChange lastBpmChange = bpmChangesContainer.FindLastBPM(CurrentBeat + beatShift, true);
-
-                if (lastBpmChange != currentBpmChange && currentBpmChange != null)
-                {
-                    if (currentBpmChange._time == CurrentBeat) // We're on top of a BPM change, move using previous BPM
-                    {
-                        beatShift = lastBpmChange == null ? beatShiftRaw : (beatShiftRaw * (song.beatsPerMinute / lastBpmChange._BPM));
-                        MoveToTimeInBeats(CurrentBeat + beatShift);
-                    }
-                    else if (beatShiftRaw < 0)
-                    {
-                        MoveToTimeInBeats(currentBpmChange._time); // If we're going backward, snap to our current bpm change.
-                    }
-                    else if (lastBpmChange != null)
-                    {
-                        MoveToTimeInBeats(lastBpmChange._time); // If we're going forward, snap to that bpm change.
-                    }
-                }
-                else
-                {
-                    MoveToTimeInBeats(CurrentBeat + beatShift);
-                }
+                MoveToTimeInBeats(CurrentBeat + bpmChangesContainer.LocalBeatsToSongBeats(beatShiftRaw, CurrentBeat));
             }
         }
     }

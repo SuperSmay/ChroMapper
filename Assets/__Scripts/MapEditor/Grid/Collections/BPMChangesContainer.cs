@@ -10,10 +10,10 @@ public class BPMChangesContainer : BeatmapObjectContainerCollection
     public float lastBPM;
     public int lastCheckedBPMIndex = 0;
 
-    private IEnumerable<Renderer> allGridRenderers;
     [SerializeField] private Transform gridRendererParent;
     [SerializeField] private GameObject bpmPrefab;
     [SerializeField] private MeasureLinesController measureLinesController;
+    [SerializeField] private CountersPlusController countersPlus;
 
     //This is a shader-level restriction and nothing I can fix.
     public static readonly int ShaderArrayMaxSize = 1023; //Unity hard caps it here.
@@ -26,7 +26,6 @@ public class BPMChangesContainer : BeatmapObjectContainerCollection
 
     private IEnumerator Start()
     {
-        allGridRenderers = gridRendererParent.GetComponentsInChildren<Renderer>().Where(x => x.material.shader.name == "Grid ZDir");
         lastBPM = BeatSaberSongContainer.Instance.song.beatsPerMinute;
 
         if (BeatSaberSongContainer.Instance.difficultyData.customData == null) yield break;
@@ -34,7 +33,7 @@ public class BPMChangesContainer : BeatmapObjectContainerCollection
         yield return new WaitUntil(() => !SceneTransitionManager.IsLoading);
 
         // TODO: Localize the big chunk of text
-        if (BeatSaberSongContainer.Instance.difficultyData.customData.HasKey("_editorOffset") &&
+        if (BeatSaberSongContainer.Instance.difficultyData.customData?.HasKey("_editorOffset") == true &&
             BeatSaberSongContainer.Instance.difficultyData.customData["_editorOffset"] > 0f)
         {
             if (Settings.Instance.Reminder_UnsupportedEditorOffset)
@@ -81,10 +80,7 @@ public class BPMChangesContainer : BeatmapObjectContainerCollection
 
     private void EditorScaleChanged(float obj)
     {
-        foreach (Renderer renderer in allGridRenderers)
-        {
-            renderer.material.SetFloat("_EditorScale", EditorScaleController.EditorScale);
-        }
+        Shader.SetGlobalFloat("_EditorScale", EditorScaleController.EditorScale);
     }
 
     internal override void UnsubscribeToCallbacks()
@@ -96,6 +92,12 @@ public class BPMChangesContainer : BeatmapObjectContainerCollection
     protected override void OnObjectDelete(BeatmapObject obj)
     {
         RefreshGridShaders();
+        countersPlus.UpdateStatistic(CountersPlusStatistic.BPM_Changes);
+    }
+
+    protected override void OnObjectSpawned(BeatmapObject obj)
+    {
+        countersPlus.UpdateStatistic(CountersPlusStatistic.BPM_Changes);
     }
 
     public void RefreshGridShaders()
@@ -128,12 +130,10 @@ public class BPMChangesContainer : BeatmapObjectContainerCollection
                 bpmChange._Beat = lastChange._Beat + Mathf.CeilToInt(passedBeats);
             }
         }
-        foreach (Renderer renderer in allGridRenderers)
-        {
-            renderer.material.SetFloatArray(Times, bpmChangeTimes);
-            renderer.material.SetFloatArray(BPMs, bpmChangeBPMS);
-            renderer.material.SetInt(BPMCount, LoadedObjects.Count + 1);
-        }
+
+        Shader.SetGlobalFloatArray(Times, bpmChangeTimes);
+        Shader.SetGlobalFloatArray(BPMs, bpmChangeBPMS);
+        Shader.SetGlobalInt(BPMCount, LoadedObjects.Count + 1);
 
         measureLinesController.RefreshMeasureLines();
     }
@@ -163,6 +163,77 @@ public class BPMChangesContainer : BeatmapObjectContainerCollection
     {
         if (inclusive) return LoadedObjects.LastOrDefault(x => x._time <= beatTimeInSongBPM + 0.01f) as BeatmapBPMChange;
         return LoadedObjects.LastOrDefault(x => x._time + 0.01f < beatTimeInSongBPM) as BeatmapBPMChange;
+    }
+
+    /// <summary>
+    /// Find the next <see cref="BeatmapBPMChange"/> after a given beat time.
+    /// </summary>
+    /// <param name="beatTimeInSongBPM">Time in raw beats (Unmodified by any BPM Changes)</param>
+    /// <param name="inclusive">Whether or not to include <see cref="BeatmapBPMChange"/>s with the same time value.</param>
+    /// <returns>The next <see cref="BeatmapBPMChange"/> after the given beat (or <see cref="null"/> if there is none).</returns>
+    public BeatmapBPMChange FindNextBPM(float beatTimeInSongBPM, bool inclusive = false)
+    {
+        if (inclusive) return LoadedObjects.FirstOrDefault(x => x._time >= beatTimeInSongBPM - 0.01f) as BeatmapBPMChange;
+        return LoadedObjects.FirstOrDefault(x => x._time - 0.01f > beatTimeInSongBPM) as BeatmapBPMChange;
+    }
+
+    /// <summary>
+    /// Calculates the number of beats in song BPM for a given number of beats in local BPM, accounting for all BPM changes, relative to a starting position
+    /// </summary>
+    /// <param name="localBeats">Number of beats in local BPM</param>
+    /// <param name="startBeat">The starting position from which to calculate. Number is in song BPM</param>
+    /// <returns>The number of beats in song BPM equivalent to the number of beats in local bpm around a starting position</returns>
+    public float LocalBeatsToSongBeats(float localBeats, float startBeat)
+    {
+        float totalSongBeats = 0;
+        float localBeatsLeft = localBeats;
+        float currentBeat = startBeat;
+        float songBPM = BeatSaberSongContainer.Instance.song.beatsPerMinute;
+        float currentBPM = FindLastBPM(startBeat, true)?._BPM ?? songBPM;
+
+        if (localBeats > 0)
+        {
+            BeatmapBPMChange nextBPMChange = FindNextBPM(startBeat, false);
+            while (localBeatsLeft > 0)
+            {
+                if (nextBPMChange is null)
+                {
+                    totalSongBeats += localBeatsLeft * songBPM / currentBPM;
+                    break;
+                }
+
+                float distance = Math.Min(localBeatsLeft * songBPM / currentBPM, nextBPMChange._time - currentBeat);
+                totalSongBeats += distance;
+                localBeatsLeft -= distance * currentBPM / songBPM;
+
+                currentBeat = nextBPMChange._time;
+                currentBPM = nextBPMChange._BPM;
+                nextBPMChange = FindNextBPM(currentBeat, false);
+            }
+        }
+        else
+        {
+            BeatmapBPMChange lastBPMChange = FindLastBPM(startBeat, false);
+            while (localBeatsLeft < 0)
+            {
+                if (lastBPMChange is null)
+                {
+                    totalSongBeats += localBeatsLeft;
+                    break;
+                }
+
+                currentBPM = lastBPMChange._BPM;
+
+                float distance = Math.Max(localBeatsLeft * songBPM / currentBPM, lastBPMChange._time - currentBeat);
+                totalSongBeats += distance;
+                localBeatsLeft -= distance * currentBPM / songBPM;
+
+                currentBeat = lastBPMChange._time;
+                lastBPMChange = FindLastBPM(currentBeat, false);
+            }
+        }
+
+        return totalSongBeats;
     }
 
     public override BeatmapObjectContainer CreateContainer() => BeatmapBPMChangeContainer.SpawnBPMChange(null, ref bpmPrefab);

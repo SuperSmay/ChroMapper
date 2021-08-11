@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -16,13 +15,12 @@ public class GridRotationController : MonoBehaviour
     private float currentRotation;
     private int targetRotation;
     private int cachedRotation;
-    private List<Renderer> allRotationalRenderers = new List<Renderer>();
 
     private static readonly int Rotation = Shader.PropertyToID("_Rotation");
-    private static readonly int Offset = Shader.PropertyToID("_Offset");
 
     private void Start()
     {
+        Shader.SetGlobalFloat(Rotation, 0);
         if (RotationCallback != null) Init();
     }
 
@@ -30,8 +28,6 @@ public class GridRotationController : MonoBehaviour
     {
         RotationCallback.RotationChangedEvent += RotationChanged;
         Settings.NotifyBySettingName("RotateTrack", UpdateRotateTrack);
-        if (!GetComponentsInChildren<Renderer>().Any()) return;
-        allRotationalRenderers.AddRange(GetComponentsInChildren<Renderer>().Where(x => x.material.HasProperty("_Rotation")));
     }
 
     private void UpdateRotateTrack(object obj)
@@ -88,12 +84,7 @@ public class GridRotationController : MonoBehaviour
         if (rotateTransform) transform.RotateAround(rotationPoint, Vector3.up, rotation - currentRotation);
         currentRotation = rotation;
         ObjectRotationChangedEvent?.Invoke();
-        foreach (Renderer g in allRotationalRenderers)
-        {
-            g.material.SetFloat(Rotation, transform.eulerAngles.y);
-            if (g.material.shader.name.Contains("Grid X"))
-                g.material.SetFloat(Offset, transform.position.x * (rotateTransform ? -1 : 1));
-        }
+        Shader.SetGlobalFloat(Rotation, rotation);
     }
 
     private void OnDestroy()

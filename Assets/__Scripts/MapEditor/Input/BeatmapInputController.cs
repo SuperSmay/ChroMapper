@@ -1,8 +1,15 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
+
+public class GlobalIntersectionCache
+{
+    internal static GameObject firstHit = null;
+}
 
 public class BeatmapInputController<T> : MonoBehaviour, CMInput.IBeatmapObjectsActions where T : BeatmapObjectContainer
 {
@@ -20,7 +27,7 @@ public class BeatmapInputController<T> : MonoBehaviour, CMInput.IBeatmapObjectsA
         mainCamera = Camera.main;
     }
 
-    protected virtual bool GetComponentFromTransform(Transform t, out T obj)
+    protected virtual bool GetComponentFromTransform(GameObject t, out T obj)
     {
         return t.TryGetComponent(out obj);
     }
@@ -29,6 +36,7 @@ public class BeatmapInputController<T> : MonoBehaviour, CMInput.IBeatmapObjectsA
     void Update()
     {
         if (customStandaloneInputModule.IsPointerOverGameObject<GraphicRaycaster>(-1, true)) return;
+        GlobalIntersectionCache.firstHit = null;
         if (ObstaclePlacement.IsPlacing)
         {
             timeWhenFirstSelecting = Time.time;
@@ -36,9 +44,9 @@ public class BeatmapInputController<T> : MonoBehaviour, CMInput.IBeatmapObjectsA
         }
         if (!isSelecting || Time.time - timeWhenFirstSelecting < 0.5f) return;
         Ray ray = mainCamera.ScreenPointToRay(mousePosition);
-        foreach (RaycastHit hit in Physics.RaycastAll(ray, 999, 1 << 9))
+        foreach (var hit in Intersections.RaycastAll(ray, 9))
         {
-            if (GetComponentFromTransform(hit.transform, out T obj))
+            if (GetComponentFromTransform(hit.GameObject, out T obj))
             {
                 if (!SelectionController.IsObjectSelected(obj.objectData))
                 {
@@ -52,9 +60,17 @@ public class BeatmapInputController<T> : MonoBehaviour, CMInput.IBeatmapObjectsA
     protected void RaycastFirstObject(out T firstObject)
     {
         Ray ray = mainCamera.ScreenPointToRay(mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit, 99, 1 << 9))
+        if (GlobalIntersectionCache.firstHit == null)
         {
-            T obj = hit.transform.GetComponentInParent<T>();
+            if (Intersections.Raycast(ray, 9, out var hit))
+            {
+                GlobalIntersectionCache.firstHit = hit.GameObject;
+            }
+        }
+
+        if (GlobalIntersectionCache.firstHit != null)
+        {
+            T obj = GlobalIntersectionCache.firstHit.GetComponentInParent<T>();
             if (obj != null)
             {
                 firstObject = obj;

@@ -1078,23 +1078,12 @@
                 },
                 {
                     "name": "",
-                    "id": "e8c3525e-ad07-4f65-963b-445116255a15",
+                    "id": "de4c99fa-1cb8-4197-be86-dd018ac9698b",
                     "path": "<Keyboard>/q",
                     "interactions": "",
                     "processors": "",
                     "groups": "ChroMapper Default",
                     "action": "Rotate In Place Left",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "0616cdc4-fc3f-468f-998b-3965fa321d46",
-                    "path": "<Keyboard>/e",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "ChroMapper Default",
-                    "action": "Rotate In Place Right",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -1106,6 +1095,17 @@
                     "processors": "",
                     "groups": "ChroMapper Default",
                     "action": "Rotate In Place Modifier",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ef840ea6-28cb-4ea2-80be-1d800b5bd5be",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "ChroMapper Default",
+                    "action": "Rotate In Place Right",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -1128,6 +1128,14 @@
                     "type": "Button",
                     "id": "5eb56c46-9493-4c8b-978c-195255f0f76d",
                     "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press"
+                },
+                {
+                    "name": "Toggle Note or Event",
+                    "type": "Button",
+                    "id": "1ef71b14-df3b-4fc2-bdf9-602b8848435b",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "Press"
                 },
@@ -1348,6 +1356,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "Mirror Colours Only",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "Button With One Modifier",
+                    "id": "364b615d-3901-49bd-9475-a9f757b813b7",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Toggle Note or Event",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "76e46738-c779-4857-b335-2f25e4dfdc52",
+                    "path": "<Keyboard>/alt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "ChroMapper Default",
+                    "action": "Toggle Note or Event",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "button",
+                    "id": "12dfa3e4-1592-4310-bada-8360461dfb2b",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "ChroMapper Default",
+                    "action": "Toggle Note or Event",
                     "isComposite": false,
                     "isPartOfComposite": true
                 }
@@ -3354,6 +3395,55 @@
                     "action": "Activate Top Row Input",
                     "isComposite": false,
                     "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Audio",
+            "id": "d4995a94-4c43-40b2-9c2e-6c14380de6bb",
+            "actions": [
+                {
+                    "name": "Toggle Hitsound Mute",
+                    "type": "Button",
+                    "id": "330cfd81-242f-446b-b926-955336819490",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "Button With One Modifier",
+                    "id": "5379c7dc-19a2-45cf-8469-7a496129e8f0",
+                    "path": "ButtonWithOneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Toggle Hitsound Mute",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "df4e1ba0-a7fb-4506-8bc0-6720e7112cff",
+                    "path": "<Keyboard>/alt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "ChroMapper Default",
+                    "action": "Toggle Hitsound Mute",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "button",
+                    "id": "e9f91017-683e-4745-ae30-d0e19544b0c4",
+                    "path": "<Keyboard>/f1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "ChroMapper Default",
+                    "action": "Toggle Hitsound Mute",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 }
             ]
         }

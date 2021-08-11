@@ -1,15 +1,18 @@
-﻿using System;
+﻿using System.Linq;
 using UnityEngine;
 
-public class BeatmapObstacleContainer : BeatmapObjectContainer {
+public class BeatmapObstacleContainer : BeatmapObjectContainer
+{
+    private static readonly int ColorTint = Shader.PropertyToID("_ColorTint");
 
     public override BeatmapObject objectData { get => obstacleData; set => obstacleData = (BeatmapObstacle)value; }
 
     [SerializeField] private TracksManager manager;
+    [SerializeField] private GameObject outlineGameObject;
 
     public BeatmapObstacle obstacleData;
 
-    public int ChunkEnd { get; private set; }
+    public int ChunkEnd => (int)((obstacleData._time + obstacleData._duration) / Intersections.ChunkSize);
 
     public bool IsRotatedByNoodleExtensions => obstacleData._customData != null && (obstacleData._customData?.HasKey("_rotation") ?? false);
 
@@ -20,6 +23,20 @@ public class BeatmapObstacleContainer : BeatmapObjectContainer {
         container.manager = manager;
         return container;
     }
+
+    public override void Setup()
+    {
+        base.Setup();
+        MaterialPropertyBlock.SetFloat(HandleScale, 1);
+    }
+
+    public void SetColor(Color color)
+    {
+        MaterialPropertyBlock.SetColor(ColorTint, color);
+        UpdateMaterials();
+    }
+
+    public void SetObstacleOutlineVisibility(bool visible) => outlineGameObject.SetActive(visible);
 
     public override void UpdateGridPosition()
     {
@@ -77,16 +94,18 @@ public class BeatmapObstacleContainer : BeatmapObjectContainer {
 
         var bounds = obstacleData.GetShape();
 
+        // Enforce positive scale, offset our obstacles to match.
         transform.localPosition = new Vector3(
-            bounds.Position,
-            bounds.StartHeight,
-            obstacleData._time * EditorScaleController.EditorScale
+            bounds.Position + (bounds.Width < 0 ? bounds.Width : 0),
+            bounds.StartHeight + (bounds.Height < 0 ? bounds.Height : 0),
+            (obstacleData._time * EditorScaleController.EditorScale) + (duration < 0 ? duration : 0)
             );
         transform.localScale = new Vector3(
-            bounds.Width,
-            bounds.Height,
-            duration
+            Mathf.Abs(bounds.Width),
+            Mathf.Abs(bounds.Height),
+            Mathf.Abs(duration)
             );
+
         if (localRotation != Vector3.zero)
         {
             transform.localEulerAngles = Vector3.zero;
@@ -98,7 +117,6 @@ public class BeatmapObstacleContainer : BeatmapObjectContainer {
             transform.RotateAround(rectWorldPos, transform.forward, localRotation.z);
         }
 
-        ChunkEnd = (int)Math.Round((objectData._time + obstacleData._duration) / (double)BeatmapObjectContainerCollection.ChunkSize,
-                 MidpointRounding.AwayFromZero);
+        UpdateCollisionGroups();
     }
 }

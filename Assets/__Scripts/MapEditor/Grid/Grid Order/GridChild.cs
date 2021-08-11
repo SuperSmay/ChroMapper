@@ -43,15 +43,14 @@ public class GridChild : MonoBehaviour
 
     public bool RegisterChildOnStart = true;
 
-    public IEnumerable<Renderer> GridRenderers;
-
-    private GridOrderController gridOrderController;
-
-    // Start is called before the first frame update
-    void Start()
+    private void OnEnable()
     {
         if (!RegisterChildOnStart) return;
-        GridRenderers = GetComponentsInChildren<Renderer>().Where(x => x.material.shader.name.Contains("Grid"));
         GridOrderController.RegisterChild(this);
+    }
+
+    private void OnDisable()
+    {
+        GridOrderController.DeregisterChild(this);    
     }
 }

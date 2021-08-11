@@ -14,6 +14,7 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
     [SerializeField] private CreateEventTypeLabels labels;
     [SerializeField] private BoxSelectionPlacementController boxSelectionPlacementController;
     [SerializeField] private LaserSpeedController laserSpeedController;
+    [SerializeField] private CountersPlusController countersPlus;
 
     internal PlatformDescriptor platformDescriptor;
 
@@ -21,7 +22,8 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
 
     public int EventTypeToPropagate = MapEvent.EVENT_TYPE_RING_LIGHTS;
     public int EventTypePropagationSize = 0;
-    private int SpecialEventTypeCount => 7 + labels.NoRotationLaneOffset;
+    private static int ExtraInterscopeLanes => BeatmapEventContainer.ModifyTypeMode == 2 ? 2 : 0;
+    private int SpecialEventTypeCount => 7 + labels.NoRotationLaneOffset + ExtraInterscopeLanes;
 
     public List<MapEvent> AllRotationEvents = new List<MapEvent>();
     public List<MapEvent> AllBoostEvents = new List<MapEvent>();
@@ -46,7 +48,7 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
             boxSelectionPlacementController.CancelPlacement();
             var propagationLength = (value == PropMode.Light ? platformDescriptor.LightingManagers[EventTypeToPropagate]?.LightIDPlacementMapReverse?.Count :
                 platformDescriptor.LightingManagers[EventTypeToPropagate]?.LightsGroupedByZ?.Length) ?? 0;
-            labels.UpdateLabels(value, EventTypeToPropagate, value == PropMode.Off ? 16 : propagationLength + 1);
+            labels.UpdateLabels(value, EventTypeToPropagate, value == PropMode.Off ? 16 + ExtraInterscopeLanes : propagationLength + 1);
             eventPlacement.SetGridSize(value != PropMode.Off ? propagationLength + 1 : SpecialEventTypeCount + platformDescriptor.LightingManagers.Count(s => s != null));
             EventTypePropagationSize = propagationLength;
             UpdatePropagationMode();
@@ -62,8 +64,13 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
     void PlatformLoaded(PlatformDescriptor descriptor)
     {
         platformDescriptor = descriptor;
-        labels.UpdateLabels(PropMode.Off, MapEvent.EVENT_TYPE_RING_LIGHTS, 16);
-        eventPlacement.SetGridSize(SpecialEventTypeCount + descriptor.LightingManagers.Count(s => s != null));
+        StartCoroutine(AfterPlatformLoaded());
+    }
+
+    private IEnumerator AfterPlatformLoaded()
+    {
+        yield return null;
+        PropagationEditing = PropMode.Off;
     }
 
     void OnDestroy()
@@ -100,6 +107,8 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
                 AllBoostEvents.Remove(e);
             }
         }
+
+        countersPlus.UpdateStatistic(CountersPlusStatistic.Events);
     }
 
     protected override void OnObjectSpawned(BeatmapObject obj)
@@ -115,6 +124,8 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
                 AllBoostEvents.Add(e);
             }
         }
+
+        countersPlus.UpdateStatistic(CountersPlusStatistic.Events);
     }
 
     public override IEnumerable<BeatmapObject> GrabSortedObjects()
@@ -169,7 +180,7 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
             MapEvent e = objectData as MapEvent;
             if (e._lightGradient != null && Settings.Instance.VisualizeChromaGradients && isActiveAndEnabled)
             {
-                StartCoroutine(WaitForGradientThenRecycle(e));
+                StartCoroutine(nameof(WaitForGradientThenRecycle), e);
             }
             else
             {
@@ -189,7 +200,7 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
     {
         if (!playing)
         {
-            StopAllCoroutines();
+            StopCoroutine(nameof(WaitForGradientThenRecycle));
             RefreshPool();
         }
     }

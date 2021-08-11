@@ -21,6 +21,8 @@ public class DifficultySelect : MonoBehaviour
     private Dictionary<string, DifficultySettings> diffs;
     public Dictionary<string, Dictionary<string, DifficultySettings>> Characteristics;
 
+    public BeatSaberMap CurrentDiff => diffs[selected.Name].Map;
+
     private Dictionary<string, int> diffRankLookup = new Dictionary<string, int>()
     {
         { "Easy", 1 },
@@ -120,7 +122,7 @@ public class DifficultySelect : MonoBehaviour
 
         var diff = diffs[selected.Name];
 
-        diff.envRemoval = envRemoval.EnvRemovalList;
+        diff.EnvEnhancements = envRemoval.EnvRemovalList;
 
         selected.ShowDirtyObjects(diff);
     }
@@ -140,17 +142,17 @@ public class DifficultySelect : MonoBehaviour
         {
             njsField.text = localDiff.NoteJumpMovementSpeed.ToString();
             songBeatOffsetField.text = localDiff.NoteJumpStartBeatOffset.ToString();
-            envRemoval.UpdateFromDiff(localDiff.envRemoval);
+            envRemoval.UpdateFromDiff(localDiff.EnvEnhancements);
         }
 
         row.ShowDirtyObjects(localDiff);
     }
 
-    private BeatSaberMap TryGetExistingMapFromDiff(DifficultyBeatmap diff)
+    private BeatSaberMap TryGetExistingMapFromDiff(DifficultySettings diff)
     {
         try
         {
-            return Song.GetMapFromDifficultyBeatmap(diff);
+            return diff.Map;
         }
         catch (Exception) {};
 
@@ -163,31 +165,34 @@ public class DifficultySelect : MonoBehaviour
     /// <param name="row">UI row that was clicked on</param>
     private void SaveDiff(DifficultyRow row)
     {
+        var localSong = BeatSaberSongContainer.Instance.song;
+        if (localSong.directory == null)
+            localSong.SaveSong();
+
         var localDiff = diffs[row.Name];
         var firstSave = localDiff.ForceDirty;
         localDiff.Commit();
         row.ShowDirtyObjects(false, true);
 
-        var Song = BeatSaberSongContainer.Instance.song;
         var diff = localDiff.DifficultyBeatmap;
 
-        if (!Song.difficultyBeatmapSets.Contains(currentCharacteristic))
+        if (!localSong.difficultyBeatmapSets.Contains(currentCharacteristic))
         {
-            Song.difficultyBeatmapSets.Add(currentCharacteristic);
+            localSong.difficultyBeatmapSets.Add(currentCharacteristic);
         }
         if (!currentCharacteristic.difficultyBeatmaps.Contains(diff))
         {
             currentCharacteristic.difficultyBeatmaps.Add(diff);
         }
 
-        BeatSaberMap map = TryGetExistingMapFromDiff(diff) ?? new BeatSaberMap
+        BeatSaberMap map = TryGetExistingMapFromDiff(localDiff) ?? new BeatSaberMap
         {
             mainNode = new JSONObject()
         };
-        string oldPath = map?.directoryAndFile;
+        string oldPath = map.directoryAndFile;
 
         diff.UpdateName();
-        map.directoryAndFile = Path.Combine(Song.directory, diff.beatmapFilename);
+        map.directoryAndFile = Path.Combine(localSong.directory, diff.beatmapFilename);
         if (File.Exists(oldPath) && oldPath != map.directoryAndFile && !File.Exists(map.directoryAndFile))
         {
             if (firstSave)
@@ -206,7 +211,7 @@ public class DifficultySelect : MonoBehaviour
 
         diff.RefreshRequirementsAndWarnings(map);
 
-        Song.SaveSong();
+        localSong.SaveSong();
         characteristicSelect.Recalculate();
 
         Debug.Log("Saved " + row.Name);
@@ -294,7 +299,7 @@ public class DifficultySelect : MonoBehaviour
 
         njsField.text = diff.NoteJumpMovementSpeed.ToString();
         songBeatOffsetField.text = diff.NoteJumpStartBeatOffset.ToString();
-        envRemoval.UpdateFromDiff(diff.envRemoval);
+        envRemoval.UpdateFromDiff(diff.EnvEnhancements);
     }
 
     /// <summary>
@@ -360,6 +365,15 @@ public class DifficultySelect : MonoBehaviour
                     map.noteJumpStartBeatOffset = fromDiff.DifficultyBeatmap.noteJumpStartBeatOffset;
 
                     map.customData = fromDiff.DifficultyBeatmap.customData?.Clone();
+                    
+                    // Yes this copies custom data, but color overrides dont copy since they're ripped from these fields instead.
+                    map.colorLeft = fromDiff.DifficultyBeatmap.colorLeft;
+                    map.colorRight = fromDiff.DifficultyBeatmap.colorRight;
+                    map.envColorLeft = fromDiff.DifficultyBeatmap.envColorLeft;
+                    map.envColorRight = fromDiff.DifficultyBeatmap.envColorRight;
+                    map.obstacleColor = fromDiff.DifficultyBeatmap.obstacleColor;
+                    map.boostColorLeft = fromDiff.DifficultyBeatmap.boostColorLeft;
+                    map.boostColorRight = fromDiff.DifficultyBeatmap.boostColorRight;
 
                     // This sets the current filename as the filename for another diff and will trigger the copy on save
                     map.UpdateName(fromDiff.DifficultyBeatmap.beatmapFilename);

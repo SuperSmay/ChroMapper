@@ -61,7 +61,7 @@ public class EventPlacement : PlacementController<MapEvent, BeatmapEventContaine
         return new MapEvent(0, 0, MapEvent.LIGHT_VALUE_RED_ON);
     }
 
-    public override void OnPhysicsRaycast(RaycastHit hit, Vector3 transformedPoint)
+    public override void OnPhysicsRaycast(Intersections.IntersectionHit _, Vector3 __)
     {
         instantiatedContainer.transform.localPosition = new Vector3(instantiatedContainer.transform.localPosition.x,
             0.5f,
@@ -101,7 +101,8 @@ public class EventPlacement : PlacementController<MapEvent, BeatmapEventContaine
 
     public void UpdateQueuedValue(int value)
     {
-        if (objectContainerCollection.PropagationEditing != EventsContainer.PropMode.Off && !queuedData.IsUtilityEvent)
+        var propID = Mathf.FloorToInt((instantiatedContainer?.transform.localPosition.x ?? 0) - 1);
+        if (objectContainerCollection.PropagationEditing != EventsContainer.PropMode.Off && propID >= 0 && !queuedData.IsUtilityEvent)
         {
             if (value != MapEvent.LIGHT_VALUE_BLUE_ON && value != MapEvent.LIGHT_VALUE_RED_ON && value != MapEvent.LIGHT_VALUE_OFF)
             {
@@ -113,7 +114,7 @@ public class EventPlacement : PlacementController<MapEvent, BeatmapEventContaine
 
         queuedData._value = value;
 
-        if (queuedData.IsLaserSpeedEvent)
+        if (queuedData.IsLaserSpeedEvent || queuedData.IsInterscopeEvent)
             if (int.TryParse(laserSpeedInputField.text, out int laserSpeed)) queuedData._value = laserSpeed;
 
         if (queuedData._type == MapEvent.EVENT_TYPE_BOOST_LIGHTS)

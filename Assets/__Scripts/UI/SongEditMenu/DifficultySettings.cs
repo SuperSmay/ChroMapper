@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using SimpleJSON;
 using static BeatSaberSong;
 
 /// <summary>
@@ -11,8 +11,27 @@ public class DifficultySettings
     public float NoteJumpMovementSpeed = 16;
     public float NoteJumpStartBeatOffset = 0;
     public string CustomName = "";
-    public List<string> envRemoval = new List<string>();
+    private List<EnvEnhancement> _envEnhancements = null;
     public bool ForceDirty = false;
+    private BeatSaberMap _map;
+    public BeatSaberMap Map
+    {
+        get
+        {
+            _map = _map ?? BeatSaberSongContainer.Instance.song.GetMapFromDifficultyBeatmap(DifficultyBeatmap);
+            return _map;
+        }
+    }
+
+    public List<EnvEnhancement> EnvEnhancements
+    {
+        get
+        {
+            _envEnhancements = _envEnhancements ?? GetEnvEnhancementsFromMap();
+            return _envEnhancements;
+        }
+        set => _envEnhancements = value;
+    }
 
     public DifficultyBeatmap DifficultyBeatmap { get; private set; }
 
@@ -20,6 +39,7 @@ public class DifficultySettings
     {
         difficultyBeatmap.GetOrCreateCustomData();
         DifficultyBeatmap = difficultyBeatmap;
+
         Revert();
     }
 
@@ -42,20 +62,8 @@ public class DifficultySettings
 
     private bool EnvRemovalChanged()
     {
-        if (DifficultyBeatmap.customData == null || !DifficultyBeatmap.customData["_environmentRemoval"].IsArray)
-        {
-            return envRemoval.Count > 0;
-        }
-
-        var envLocal = new List<string>();
-        foreach (var ent in DifficultyBeatmap.customData["_environmentRemoval"].AsArray)
-        {
-            if (ent.Value.IsString)
-                envLocal.Add(ent.Value.Value);
-        }
-
-        var distinctEnvLocal = envLocal.Distinct().ToArray();
-        return distinctEnvLocal.Length != envRemoval.Count() || !distinctEnvLocal.All(it => envRemoval.Contains(it));
+        return _envEnhancements != null && Map != null &&
+               !(Map._envEnhancements.All(_envEnhancements.Contains) && Map._envEnhancements.Count == _envEnhancements.Count);
     }
 
     /// <summary>
@@ -77,20 +85,33 @@ public class DifficultySettings
             DifficultyBeatmap.GetOrCreateCustomData()["_difficultyLabel"] = CustomName;
         }
 
-        if (envRemoval.Count == 0)
-        {
-            DifficultyBeatmap.customData?.Remove("_environmentRemoval");
-        }
-        else
-        {
-            var envArr = new JSONArray();
-            foreach (var ent in envRemoval)
-            {
-                envArr.Add(ent);
-            }
+        DifficultyBeatmap.customData?.Remove("_environmentRemoval");
 
-            DifficultyBeatmap.GetOrCreateCustomData()["_environmentRemoval"] = envArr;
+        // Map save is sloooow so only do it if we need to
+        if (EnvRemovalChanged())
+        {
+            Map._envEnhancements = _envEnhancements;
+            Map.Save();
         }
+    }
+
+    private List<EnvEnhancement> GetEnvEnhancementsFromMap()
+    {
+        var enhancements = new List<EnvEnhancement>();
+        if (DifficultyBeatmap.customData != null)
+        {
+            foreach (var ent in DifficultyBeatmap.customData["_environmentRemoval"])
+            {
+                enhancements.Add(new EnvEnhancement(ent.Value.Value));
+            }
+        }
+
+        if (Map != null)
+        {
+            enhancements.AddRange(Map._envEnhancements.Select(it => it.Clone()));
+        }
+
+        return enhancements;
     }
 
     /// <summary>
@@ -102,11 +123,6 @@ public class DifficultySettings
         NoteJumpStartBeatOffset = DifficultyBeatmap.noteJumpStartBeatOffset;
         CustomName = DifficultyBeatmap.customData["_difficultyLabel"].Value;
 
-        envRemoval.Clear();
-        foreach (var ent in DifficultyBeatmap.customData["_environmentRemoval"])
-        {
-            if (!envRemoval.Contains(ent.Value.Value))
-                envRemoval.Add(ent.Value.Value);
-        }
+        _envEnhancements = null;
     }
 }

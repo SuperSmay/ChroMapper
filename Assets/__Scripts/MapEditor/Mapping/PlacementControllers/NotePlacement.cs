@@ -87,9 +87,9 @@ public class NotePlacement : PlacementController<BeatmapNote, BeatmapNoteContain
         return new BeatmapNote(0, 0, 0, BeatmapNote.NOTE_TYPE_A, BeatmapNote.NOTE_CUT_DIRECTION_DOWN);
     }
 
-    public override void OnPhysicsRaycast(RaycastHit hit, Vector3 _)
+    public override void OnPhysicsRaycast(Intersections.IntersectionHit hit, Vector3 _)
     {
-        Vector3 roundedHit = parentTrack.InverseTransformPoint(hit.point);
+        Vector3 roundedHit = parentTrack.InverseTransformPoint(hit.Point);
         roundedHit = new Vector3(roundedHit.x, roundedHit.y, RoundedTime * EditorScaleController.EditorScale);
 
         // Check if Chroma Color notes button is active and apply _color
@@ -124,7 +124,7 @@ public class NotePlacement : PlacementController<BeatmapNote, BeatmapNoteContain
             queuedData.GetOrCreateCustomData()["_position"] = position;
 
             precisionPlacement.TogglePrecisionPlacement(true);
-            precisionPlacement.UpdateMousePosition(hit.point);
+            precisionPlacement.UpdateMousePosition(hit.Point);
         }
         else
         {
@@ -196,12 +196,8 @@ public class NotePlacement : PlacementController<BeatmapNote, BeatmapNoteContain
         if (instantiatedContainer is null) return;
         instantiatedContainer.mapNoteData = queuedData;
         noteAppearanceSO.SetNoteAppearance(instantiatedContainer);
-        foreach (MeshRenderer renderer in instantiatedContainer.GetComponentsInChildren<MeshRenderer>())
-        {
-            if (renderer.material.HasProperty("_AlwaysTranslucent") && renderer.material.GetFloat("_AlwaysTranslucent") == 1)
-                continue; //Dont want to do this shit almost every frame.
-            renderer.material.SetFloat("_AlwaysTranslucent", 1);
-        }
+        instantiatedContainer.MaterialPropertyBlock.SetFloat("_AlwaysTranslucent", 1);
+        instantiatedContainer.UpdateMaterials();
         instantiatedContainer.transform.localEulerAngles = BeatmapNoteContainer.Directionalize(queuedData);
     }
 
@@ -216,6 +212,12 @@ public class NotePlacement : PlacementController<BeatmapNote, BeatmapNoteContain
             draggedObjectContainer.transform.localEulerAngles = BeatmapNoteContainer.Directionalize(dragged);
         }
         noteAppearanceSO?.SetNoteAppearance(draggedObjectContainer);
+    }
+
+    internal override void RefreshVisuals()
+    {
+        base.RefreshVisuals();
+        instantiatedContainer.SetArcVisible(false);
     }
 
     //TODO perhaps make a helper function to deal with the context.performed and context.canceled checks

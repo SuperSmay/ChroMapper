@@ -1091,23 +1091,12 @@ public class @CMInput : IInputActionCollection, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""e8c3525e-ad07-4f65-963b-445116255a15"",
+                    ""id"": ""de4c99fa-1cb8-4197-be86-dd018ac9698b"",
                     ""path"": ""<Keyboard>/q"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""ChroMapper Default"",
                     ""action"": ""Rotate In Place Left"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""0616cdc4-fc3f-468f-998b-3965fa321d46"",
-                    ""path"": ""<Keyboard>/e"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""ChroMapper Default"",
-                    ""action"": ""Rotate In Place Right"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -1119,6 +1108,17 @@ public class @CMInput : IInputActionCollection, IDisposable
                     ""processors"": """",
                     ""groups"": ""ChroMapper Default"",
                     ""action"": ""Rotate In Place Modifier"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ef840ea6-28cb-4ea2-80be-1d800b5bd5be"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""ChroMapper Default"",
+                    ""action"": ""Rotate In Place Right"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1141,6 +1141,14 @@ public class @CMInput : IInputActionCollection, IDisposable
                     ""type"": ""Button"",
                     ""id"": ""5eb56c46-9493-4c8b-978c-195255f0f76d"",
                     ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""Toggle Note or Event"",
+                    ""type"": ""Button"",
+                    ""id"": ""1ef71b14-df3b-4fc2-bdf9-602b8848435b"",
+                    ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": ""Press""
                 },
@@ -1361,6 +1369,39 @@ public class @CMInput : IInputActionCollection, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Mirror Colours Only"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""364b615d-3901-49bd-9475-a9f757b813b7"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Toggle Note or Event"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""76e46738-c779-4857-b335-2f25e4dfdc52"",
+                    ""path"": ""<Keyboard>/alt"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""ChroMapper Default"",
+                    ""action"": ""Toggle Note or Event"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""button"",
+                    ""id"": ""12dfa3e4-1592-4310-bada-8360461dfb2b"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""ChroMapper Default"",
+                    ""action"": ""Toggle Note or Event"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 }
@@ -3369,6 +3410,55 @@ public class @CMInput : IInputActionCollection, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Audio"",
+            ""id"": ""d4995a94-4c43-40b2-9c2e-6c14380de6bb"",
+            ""actions"": [
+                {
+                    ""name"": ""Toggle Hitsound Mute"",
+                    ""type"": ""Button"",
+                    ""id"": ""330cfd81-242f-446b-b926-955336819490"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": ""Button With One Modifier"",
+                    ""id"": ""5379c7dc-19a2-45cf-8469-7a496129e8f0"",
+                    ""path"": ""ButtonWithOneModifier"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Toggle Hitsound Mute"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""modifier"",
+                    ""id"": ""df4e1ba0-a7fb-4506-8bc0-6720e7112cff"",
+                    ""path"": ""<Keyboard>/alt"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""ChroMapper Default"",
+                    ""action"": ""Toggle Hitsound Mute"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""button"",
+                    ""id"": ""e9f91017-683e-4745-ae30-d0e19544b0c4"",
+                    ""path"": ""<Keyboard>/f1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""ChroMapper Default"",
+                    ""action"": ""Toggle Hitsound Mute"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -3437,6 +3527,7 @@ public class @CMInput : IInputActionCollection, IDisposable
         m_Workflows = asset.FindActionMap("Workflows", throwIfNotFound: true);
         m_Workflows_ToggleRightButtonPanel = m_Workflows.FindAction("Toggle Right Button Panel", throwIfNotFound: true);
         m_Workflows_UpdateSwingArcVisualizer = m_Workflows.FindAction("Update Swing Arc Visualizer", throwIfNotFound: true);
+        m_Workflows_ToggleNoteorEvent = m_Workflows.FindAction("Toggle Note or Event", throwIfNotFound: true);
         m_Workflows_PlaceRedNoteorEvent = m_Workflows.FindAction("Place Red Note or Event", throwIfNotFound: true);
         m_Workflows_PlaceBlueNoteorEvent = m_Workflows.FindAction("Place Blue Note or Event", throwIfNotFound: true);
         m_Workflows_PlaceBomb = m_Workflows.FindAction("Place Bomb", throwIfNotFound: true);
@@ -3564,6 +3655,9 @@ public class @CMInput : IInputActionCollection, IDisposable
         // Laser Speed
         m_LaserSpeed = asset.FindActionMap("Laser Speed", throwIfNotFound: true);
         m_LaserSpeed_ActivateTopRowInput = m_LaserSpeed.FindAction("Activate Top Row Input", throwIfNotFound: true);
+        // Audio
+        m_Audio = asset.FindActionMap("Audio", throwIfNotFound: true);
+        m_Audio_ToggleHitsoundMute = m_Audio.FindAction("Toggle Hitsound Mute", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -4101,6 +4195,7 @@ public class @CMInput : IInputActionCollection, IDisposable
     private IWorkflowsActions m_WorkflowsActionsCallbackInterface;
     private readonly InputAction m_Workflows_ToggleRightButtonPanel;
     private readonly InputAction m_Workflows_UpdateSwingArcVisualizer;
+    private readonly InputAction m_Workflows_ToggleNoteorEvent;
     private readonly InputAction m_Workflows_PlaceRedNoteorEvent;
     private readonly InputAction m_Workflows_PlaceBlueNoteorEvent;
     private readonly InputAction m_Workflows_PlaceBomb;
@@ -4115,6 +4210,7 @@ public class @CMInput : IInputActionCollection, IDisposable
         public WorkflowsActions(@CMInput wrapper) { m_Wrapper = wrapper; }
         public InputAction @ToggleRightButtonPanel => m_Wrapper.m_Workflows_ToggleRightButtonPanel;
         public InputAction @UpdateSwingArcVisualizer => m_Wrapper.m_Workflows_UpdateSwingArcVisualizer;
+        public InputAction @ToggleNoteorEvent => m_Wrapper.m_Workflows_ToggleNoteorEvent;
         public InputAction @PlaceRedNoteorEvent => m_Wrapper.m_Workflows_PlaceRedNoteorEvent;
         public InputAction @PlaceBlueNoteorEvent => m_Wrapper.m_Workflows_PlaceBlueNoteorEvent;
         public InputAction @PlaceBomb => m_Wrapper.m_Workflows_PlaceBomb;
@@ -4138,6 +4234,9 @@ public class @CMInput : IInputActionCollection, IDisposable
                 @UpdateSwingArcVisualizer.started -= m_Wrapper.m_WorkflowsActionsCallbackInterface.OnUpdateSwingArcVisualizer;
                 @UpdateSwingArcVisualizer.performed -= m_Wrapper.m_WorkflowsActionsCallbackInterface.OnUpdateSwingArcVisualizer;
                 @UpdateSwingArcVisualizer.canceled -= m_Wrapper.m_WorkflowsActionsCallbackInterface.OnUpdateSwingArcVisualizer;
+                @ToggleNoteorEvent.started -= m_Wrapper.m_WorkflowsActionsCallbackInterface.OnToggleNoteorEvent;
+                @ToggleNoteorEvent.performed -= m_Wrapper.m_WorkflowsActionsCallbackInterface.OnToggleNoteorEvent;
+                @ToggleNoteorEvent.canceled -= m_Wrapper.m_WorkflowsActionsCallbackInterface.OnToggleNoteorEvent;
                 @PlaceRedNoteorEvent.started -= m_Wrapper.m_WorkflowsActionsCallbackInterface.OnPlaceRedNoteorEvent;
                 @PlaceRedNoteorEvent.performed -= m_Wrapper.m_WorkflowsActionsCallbackInterface.OnPlaceRedNoteorEvent;
                 @PlaceRedNoteorEvent.canceled -= m_Wrapper.m_WorkflowsActionsCallbackInterface.OnPlaceRedNoteorEvent;
@@ -4172,6 +4271,9 @@ public class @CMInput : IInputActionCollection, IDisposable
                 @UpdateSwingArcVisualizer.started += instance.OnUpdateSwingArcVisualizer;
                 @UpdateSwingArcVisualizer.performed += instance.OnUpdateSwingArcVisualizer;
                 @UpdateSwingArcVisualizer.canceled += instance.OnUpdateSwingArcVisualizer;
+                @ToggleNoteorEvent.started += instance.OnToggleNoteorEvent;
+                @ToggleNoteorEvent.performed += instance.OnToggleNoteorEvent;
+                @ToggleNoteorEvent.canceled += instance.OnToggleNoteorEvent;
                 @PlaceRedNoteorEvent.started += instance.OnPlaceRedNoteorEvent;
                 @PlaceRedNoteorEvent.performed += instance.OnPlaceRedNoteorEvent;
                 @PlaceRedNoteorEvent.canceled += instance.OnPlaceRedNoteorEvent;
@@ -5404,6 +5506,39 @@ public class @CMInput : IInputActionCollection, IDisposable
         }
     }
     public LaserSpeedActions @LaserSpeed => new LaserSpeedActions(this);
+
+    // Audio
+    private readonly InputActionMap m_Audio;
+    private IAudioActions m_AudioActionsCallbackInterface;
+    private readonly InputAction m_Audio_ToggleHitsoundMute;
+    public struct AudioActions
+    {
+        private @CMInput m_Wrapper;
+        public AudioActions(@CMInput wrapper) { m_Wrapper = wrapper; }
+        public InputAction @ToggleHitsoundMute => m_Wrapper.m_Audio_ToggleHitsoundMute;
+        public InputActionMap Get() { return m_Wrapper.m_Audio; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(AudioActions set) { return set.Get(); }
+        public void SetCallbacks(IAudioActions instance)
+        {
+            if (m_Wrapper.m_AudioActionsCallbackInterface != null)
+            {
+                @ToggleHitsoundMute.started -= m_Wrapper.m_AudioActionsCallbackInterface.OnToggleHitsoundMute;
+                @ToggleHitsoundMute.performed -= m_Wrapper.m_AudioActionsCallbackInterface.OnToggleHitsoundMute;
+                @ToggleHitsoundMute.canceled -= m_Wrapper.m_AudioActionsCallbackInterface.OnToggleHitsoundMute;
+            }
+            m_Wrapper.m_AudioActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                @ToggleHitsoundMute.started += instance.OnToggleHitsoundMute;
+                @ToggleHitsoundMute.performed += instance.OnToggleHitsoundMute;
+                @ToggleHitsoundMute.canceled += instance.OnToggleHitsoundMute;
+            }
+        }
+    }
+    public AudioActions @Audio => new AudioActions(this);
     private int m_ChroMapperDefaultSchemeIndex = -1;
     public InputControlScheme ChroMapperDefaultScheme
     {
@@ -5477,6 +5612,7 @@ public class @CMInput : IInputActionCollection, IDisposable
     {
         void OnToggleRightButtonPanel(InputAction.CallbackContext context);
         void OnUpdateSwingArcVisualizer(InputAction.CallbackContext context);
+        void OnToggleNoteorEvent(InputAction.CallbackContext context);
         void OnPlaceRedNoteorEvent(InputAction.CallbackContext context);
         void OnPlaceBlueNoteorEvent(InputAction.CallbackContext context);
         void OnPlaceBomb(InputAction.CallbackContext context);
@@ -5632,5 +5768,9 @@ public class @CMInput : IInputActionCollection, IDisposable
     public interface ILaserSpeedActions
     {
         void OnActivateTopRowInput(InputAction.CallbackContext context);
+    }
+    public interface IAudioActions
+    {
+        void OnToggleHitsoundMute(InputAction.CallbackContext context);
     }
 }

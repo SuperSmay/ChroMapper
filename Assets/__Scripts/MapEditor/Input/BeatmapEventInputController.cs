@@ -34,6 +34,10 @@ public class BeatmapEventInputController : BeatmapInputController<BeatmapEventCo
                 tracksManager?.RefreshTracks();
             }
         }
+        else if (e.eventData._type == MapEvent.EVENT_TYPE_BOOST_LIGHTS)
+        {
+            e.eventData._value = e.eventData._value > 0 ? 0 : 1;
+        }
         else if (e.eventData.IsUtilityEvent)
         {
             return;
@@ -48,9 +52,9 @@ public class BeatmapEventInputController : BeatmapInputController<BeatmapEventCo
         BeatmapActionContainer.AddAction(new BeatmapObjectModifiedAction(e.objectData, e.objectData, original));
     }
 
-    protected override bool GetComponentFromTransform(Transform t, out BeatmapEventContainer obj)
+    protected override bool GetComponentFromTransform(GameObject t, out BeatmapEventContainer obj)
     {
-        return t.parent.TryGetComponent(out obj);
+        return t.transform.parent.TryGetComponent(out obj);
     }
 
     public void OnTweakEventValue(InputAction.CallbackContext context)

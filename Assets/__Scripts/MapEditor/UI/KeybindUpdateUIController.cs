@@ -12,6 +12,7 @@ public class KeybindUpdateUIController : MonoBehaviour, CMInput.IWorkflowsAction
 
     [SerializeField] private MirrorSelection mirror;
 
+    [SerializeField] private ColorTypeController colorType;
     [SerializeField] private Toggle redToggle;
     [SerializeField] private Toggle blueToggle;
     [SerializeField] private GameObject precisionRotationContainer;
@@ -45,7 +46,6 @@ public class KeybindUpdateUIController : MonoBehaviour, CMInput.IWorkflowsAction
         if (!context.performed) return;
         blueToggle.onValueChanged.Invoke(true);
         placeMode.SetMode(PlacementModeController.PlacementMode.NOTE);
-        lightMode.UpdateValue();
     }
 
     public void OnPlaceRedNoteorEvent(InputAction.CallbackContext context)
@@ -53,6 +53,19 @@ public class KeybindUpdateUIController : MonoBehaviour, CMInput.IWorkflowsAction
         if (!context.performed) return;
         redToggle.onValueChanged.Invoke(true);
         placeMode.SetMode(PlacementModeController.PlacementMode.NOTE);
+    }
+
+    public void OnToggleNoteorEvent(InputAction.CallbackContext context)
+    {
+        if (!context.performed) return;
+        if (colorType.LeftSelectedEnabled())
+        {
+            blueToggle.onValueChanged.Invoke(true);
+        }
+        else
+        {
+            redToggle.onValueChanged.Invoke(true);
+        }
         lightMode.UpdateValue();
     }
 
