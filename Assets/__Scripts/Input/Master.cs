@@ -1814,6 +1814,17 @@ public class @CMInput : IInputActionCollection, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""c3efd8a7-69ca-49ca-a617-946f6cebb39b"",
+                    ""path"": ""<XRController>{RightHand}/thumbstickClicked"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Toggle Playing"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""59ab5455-dd74-429f-808f-1c09186ae5de"",
                     ""path"": ""<Keyboard>/semicolon"",
                     ""interactions"": """",

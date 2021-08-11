@@ -37,6 +37,33 @@ public class OptionsController : MenuBase
         if (this != null) StartCoroutine(CloseOptions());
     }
 
+
+    //Get main camera stuff
+    void OnEnable()
+    {
+        Debug.Log("OnEnable called");
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log("OnSceneLoaded: " + scene.name);
+        Debug.Log(mode);
+        Camera cam = Camera.main;
+        Canvas canvas = GetComponent<Canvas>();
+        canvas.worldCamera = cam;
+        Debug.Log("OnSceneLoaded: Camera set to" + cam.name);
+
+    }
+
+    void OnDisable()
+    {
+        Debug.Log("OnDisable");
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+
+
     public void GoToURL(string url)
     {
         Application.OpenURL(url);

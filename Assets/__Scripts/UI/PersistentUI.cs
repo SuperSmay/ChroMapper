@@ -8,6 +8,7 @@ using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class PersistentUI : MonoBehaviour {
 
@@ -106,6 +107,35 @@ public class PersistentUI : MonoBehaviour {
         centerDisplay.host = this;
         bottomDisplay.host = this;
     }
+
+
+    //Get main camera stuff
+    void OnEnable()
+    {
+        Debug.Log("OnEnable called");
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log("OnSceneLoaded: " + scene.name);
+        Debug.Log(mode);
+        Camera cam = Camera.main;
+        Canvas canvas = GetComponent<Canvas>();
+        canvas.worldCamera = cam;
+        Debug.Log("OnSceneLoaded: Camera set to" + cam.name);
+
+    }
+
+    void OnDisable()
+    {
+        Debug.Log("OnDisable");
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+
+
+
 
     private static void UpdateDSPBufferSize()
     {
