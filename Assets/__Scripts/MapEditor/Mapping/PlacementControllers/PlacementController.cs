@@ -32,6 +32,8 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
     protected bool isOnPlacement = false;
     protected Camera mainCamera = null;
 
+    private Transform controllerTransform;
+
     protected BOC draggedObjectContainer = null;
     private BO draggedObjectData = null;
     private BO originalQueued = null;
@@ -58,6 +60,7 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
         queuedData = GenerateOriginalData();
         IsActive = startingActiveState;
         mainCamera = Camera.main;
+        controllerTransform = customStandaloneInputModule.getControllerTransform();
     }
 
     protected virtual bool TestForType<T>(Intersections.IntersectionHit hit, BeatmapObject.Type type) where T : MonoBehaviour
@@ -188,7 +191,7 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
         if (usePrecisionPlacement) return;
         if (context.performed && CanClickAndDrag)
         {
-            Ray dragRay = mainCamera.ScreenPointToRay(mousePosition);
+            Ray dragRay = new Ray(controllerTransform.position, controllerTransform.forward);
             instantiatedContainer?.gameObject?.SetActive(false);
             if (Intersections.Raycast(dragRay, 9, out var dragHit))
             {
@@ -210,7 +213,7 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
         if (usePrecisionPlacement) return;
         if (context.performed && CanClickAndDrag)
         {
-            Ray dragRay = mainCamera.ScreenPointToRay(mousePosition);
+            Ray dragRay = new Ray(controllerTransform.position, controllerTransform.forward);
             if (Intersections.Raycast(dragRay, 9, out var dragHit))
             {
                 BeatmapObjectContainer con = dragHit.GameObject.GetComponentInParent<BeatmapObjectContainer>();
@@ -305,7 +308,7 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
             applicationFocusChanged = false;
         }
 
-        Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+        Ray ray = new Ray(controllerTransform.position, controllerTransform.forward);
         var gridsHit = Intersections.RaycastAll(ray, 11);
         isOnPlacement = false;
 
@@ -410,7 +413,7 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
     protected BOC ObjectUnderCursor() {
         if (customStandaloneInputModule.IsPointerOverGameObject<GraphicRaycaster>(-1, true)) return null;
 
-        var ray = mainCamera.ScreenPointToRay(mousePosition);
+        var ray = new Ray(controllerTransform.position, controllerTransform.forward);
         return !Intersections.Raycast(ray, 9, out var hit) ? null : hit.GameObject.GetComponentInParent<BOC>();
     }
 

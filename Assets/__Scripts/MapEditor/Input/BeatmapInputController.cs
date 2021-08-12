@@ -21,10 +21,13 @@ public class BeatmapInputController<T> : MonoBehaviour, CMInput.IBeatmapObjectsA
     private float timeWhenFirstSelecting = 0;
     private bool massSelect = false;
 
+    private Transform controllerTransform;
+
     // Start is called before the first frame update
     void Start()
     {
         mainCamera = Camera.main;
+        controllerTransform = customStandaloneInputModule.getControllerTransform();
     }
 
     protected virtual bool GetComponentFromTransform(GameObject t, out T obj)
@@ -43,7 +46,8 @@ public class BeatmapInputController<T> : MonoBehaviour, CMInput.IBeatmapObjectsA
             return;
         }
         if (!isSelecting || Time.time - timeWhenFirstSelecting < 0.5f) return;
-        Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+        //Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+        Ray ray = new Ray(controllerTransform.position, controllerTransform.forward);
         foreach (var hit in Intersections.RaycastAll(ray, 9))
         {
             if (GetComponentFromTransform(hit.GameObject, out T obj))
@@ -59,7 +63,9 @@ public class BeatmapInputController<T> : MonoBehaviour, CMInput.IBeatmapObjectsA
 
     protected void RaycastFirstObject(out T firstObject)
     {
-        Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+        //Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+
+        Ray ray = new Ray(controllerTransform.position, controllerTransform.forward);
         if (GlobalIntersectionCache.firstHit == null)
         {
             if (Intersections.Raycast(ray, 9, out var hit))

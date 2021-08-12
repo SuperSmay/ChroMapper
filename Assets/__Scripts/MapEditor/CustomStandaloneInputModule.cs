@@ -1,4 +1,5 @@
 ﻿using UnityEngine.EventSystems;
+using UnityEngine;
 
 /*  /class CustomStandaloneInputModule
 *  /brief A StandaloneInputModule with access to buttons' PointerEventData and RaycasterModule checking
@@ -31,4 +32,11 @@ public class CustomStandaloneInputModule : StandaloneInputModule
         }
         return false;
     }
+
+    public Transform getControllerTransform(string hand = "right")
+    {
+        if (hand.Equals("right")) return GameObject.Find("RightHandAnchor").transform;
+        return GameObject.Find("LeftHandAnchor").transform;
+    }
+    
 }

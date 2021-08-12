@@ -719,11 +719,33 @@ public class @CMInput : IInputActionCollection, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""ff2efa45-a63a-4047-96c6-26a0a0a1ad8c"",
+                    ""path"": ""<XRController>{RightHand}/gripPressed"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Initiate Click and Drag"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""5972be07-cf3b-44d3-861b-c80e8d655778"",
                     ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""ChroMapper Default"",
+                    ""action"": ""Place Object"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4f7facba-70b2-4df5-b888-2a1bd4a7542a"",
+                    ""path"": ""<XRController>{RightHand}/triggerPressed"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
                     ""action"": ""Place Object"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -1879,6 +1901,17 @@ public class @CMInput : IInputActionCollection, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""e64286bc-45ff-4f97-a77d-a5986e0376f3"",
+                    ""path"": ""<XRController>{RightHand}/joystick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""+Change Time and Precision"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""93928bfb-c637-475e-a029-b96ccfdacd36"",
                     ""path"": ""<Keyboard>/shift"",
                     ""interactions"": """",
@@ -2518,6 +2551,17 @@ public class @CMInput : IInputActionCollection, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""ChroMapper Default"",
+                    ""action"": ""Pause Editor"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ef6cc7bb-1580-43d0-adaa-0b11024c0728"",
+                    ""path"": ""<XRController>{LeftHand}/menu"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
                     ""action"": ""Pause Editor"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
